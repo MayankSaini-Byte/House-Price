@@ -59,7 +59,7 @@ def _save_chart(fig, charts_dir, name):
     return path
 
 
-def build_pipeline(data_dir, charts_dir):
+def build_pipeline(data_dir, charts_dir, generate_charts=True):
     """
     Full ML pipeline: load data, clean, engineer features, train, evaluate, and generate charts.
 
@@ -71,7 +71,8 @@ def build_pipeline(data_dir, charts_dir):
         - num_cols / cat_cols: column lists
         - dataset_stats: summary statistics
     """
-    _setup_chart_style()
+    if generate_charts:
+        _setup_chart_style()
 
     # ════════════════════════════════════════════
     # 1. LOAD DATA
@@ -92,7 +93,8 @@ def build_pipeline(data_dir, charts_dir):
     # ════════════════════════════════════════════
     # 2. GENERATE EDA CHARTS (before cleaning)
     # ════════════════════════════════════════════
-    _generate_eda_charts(train, charts_dir)
+    if generate_charts:
+        _generate_eda_charts(train, charts_dir)
 
     # ════════════════════════════════════════════
     # 3. DATA CLEANING
@@ -206,16 +208,17 @@ def build_pipeline(data_dir, charts_dir):
     # ════════════════════════════════════════════
     # 8. GENERATE MODEL COMPARISON CHARTS
     # ════════════════════════════════════════════
-    _generate_model_charts(results, charts_dir)
+    if generate_charts:
+        _generate_model_charts(results, charts_dir)
 
-    # Generate feature importance from Random Forest
-    _generate_feature_importance_chart(
-        models['Random Forest'], X_train_scaled, num_cols, cat_cols,
-        preprocessor, charts_dir
-    )
+        # Generate feature importance from Random Forest
+        _generate_feature_importance_chart(
+            models['Random Forest'], X_train_scaled, num_cols, cat_cols,
+            preprocessor, charts_dir
+        )
 
-    # Generate results/insights charts
-    _generate_results_charts(train, charts_dir)
+        # Generate results/insights charts
+        _generate_results_charts(train, charts_dir)
 
     # Update dataset stats with best model info
     best_model_name = max(results, key=lambda k: results[k]['r2'])

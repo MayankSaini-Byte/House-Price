@@ -10,7 +10,9 @@ def create_app():
     """Create and configure the Flask application."""
     # Resolve paths relative to this file
     base_dir = os.path.abspath(os.path.dirname(__file__))
-    data_dir = os.path.abspath(os.path.join(base_dir, '..', 'data'))
+    data_dir = os.path.join(base_dir, 'data')
+    if not os.path.exists(os.path.join(data_dir, 'train.csv')):
+        data_dir = os.path.abspath(os.path.join(base_dir, '..', 'data'))
     static_dir = os.path.join(base_dir, 'static')
     template_dir = os.path.join(base_dir, 'templates')
 
@@ -65,22 +67,28 @@ def _init_ml_pipeline(app):
     base_dir = os.path.abspath(os.path.dirname(__file__))
     cache_path = os.path.join(base_dir, 'ml', 'saved_pipeline.joblib')
     
-    if os.path.exists(cache_path):
-        print("Loading pre-trained pipeline and models from cache...")
-        result = joblib.load(cache_path)
-    else:
-        print("No cache found. Running ML pipeline and training models...")
+    try:
+        if os.path.exists(cache_path):
+            print("Loading pre-trained pipeline and models from cache...")
+            result = joblib.load(cache_path)
+        else:
+            raise FileNotFoundError("Cache file not found.")
+    except Exception as e:
+        print(f"Cache load bypassed/failed ({e}). Training models in memory...")
         from ml.pipeline import build_pipeline
+        is_vercel = os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL_ENV') is not None
         result = build_pipeline(
             data_dir=app.config['DATA_DIR'],
-            charts_dir=app.config['CHARTS_DIR']
+            charts_dir=app.config['CHARTS_DIR'],
+            generate_charts=not is_vercel
         )
-        # Save cache for future runs/production hosting
-        try:
-            joblib.dump(result, cache_path)
-            print(f"Saved pipeline cache to {cache_path}")
-        except Exception as e:
-            print(f"Warning: Could not save pipeline cache: {e}")
+        # Try to save cache locally (will fail silently on read-only Vercel)
+        if not is_vercel:
+            try:
+                joblib.dump(result, cache_path)
+                print(f"Saved pipeline cache to {cache_path}")
+            except Exception as dump_err:
+                print(f"Warning: Could not save pipeline cache: {dump_err}")
 
     app.config['ML_PIPELINE'] = result['pipeline']
     app.config['ML_MODELS'] = result['models']
