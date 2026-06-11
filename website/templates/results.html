@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Results & Insights — House Price Prediction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 8</span>
+        <h1 class="page-header__title">Results & Key Insights</h1>
+        <p class="page-header__description">
+            Major findings from the analysis — what drives house prices, which features matter most,
+            and what the data reveals about the Ames housing market.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ═══ Key Findings ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-8">Key Findings</h2>
+
+        <div class="grid grid--2 mb-12">
+            <div class="insight-card">
+                <div class="insight-card__number">#1</div>
+                <h4 class="insight-card__title">Overall Quality Dominates</h4>
+                <p class="insight-card__text">
+                    <strong>OverallQual</strong> has the highest correlation with SalePrice (0.79).
+                    A one-point increase in quality (on a 1-10 scale) corresponds to roughly a
+                    <strong>$25,000–40,000</strong> increase in sale price. This single feature
+                    explains more variance than any other.
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-card__number">#2</div>
+                <h4 class="insight-card__title">Living Area is King</h4>
+                <p class="insight-card__text">
+                    <strong>GrLivArea</strong> (above-ground living area) is the second strongest
+                    predictor (correlation: 0.71). Each additional 100 sq ft of living space adds
+                    approximately <strong>$8,000–12,000</strong> to the price. The relationship
+                    is remarkably linear, which explains why Linear Regression performs so well.
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-card__number">#3</div>
+                <h4 class="insight-card__title">Renovation Impact</h4>
+                <p class="insight-card__text">
+                    Recently remodeled houses command a significant premium. The <strong>RemodAge</strong>
+                    feature (years since last remodel) has a negative correlation with price — meaning
+                    more recent renovations lead to higher prices. A house remodeled within the last
+                    5 years sells for <strong>15–25% more</strong> than a similar unrenovated property.
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-card__number">#4</div>
+                <h4 class="insight-card__title">Garage Matters More Than Pool</h4>
+                <p class="insight-card__text">
+                    Having a garage (present in 95% of homes) correlates strongly with price, while
+                    pools (only 0.5% of homes) have minimal impact. In the Midwest, <strong>covered
+                    parking is a necessity</strong> while pools are a luxury with limited seasonal use.
+                    GarageCars and GarageArea are among the top 10 predictors.
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-card__number">#5</div>
+                <h4 class="insight-card__title">Neighborhood Premium</h4>
+                <p class="insight-card__text">
+                    Location matters enormously. The top 3 neighborhoods (NridgHt, NoRidge, StoneBr)
+                    have median prices <strong>2–3× higher</strong> than budget neighborhoods
+                    (MeadowV, BrDale). This reflects school districts, amenities, and overall
+                    desirability — factors captured purely through location.
+                </p>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-card__number">#6</div>
+                <h4 class="insight-card__title">Linear Regression Wins</h4>
+                <p class="insight-card__text">
+                    Despite being the simplest model, <strong>Linear Regression achieves the highest
+                    R² score</strong>. This is because our feature engineering explicitly creates the
+                    non-linear relationships (interactions, binary flags) that linear models can't
+                    discover on their own. The log transform of the target also linearizes the problem.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Charts ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-8">Visual Analysis</h2>
+
+        <!-- Feature Importance -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/feature_importance.png') }}" alt="Feature Importance from Random Forest">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Feature Importance (Random Forest)</h3>
+                <p class="chart-card__description">
+                    This chart shows which features the Random Forest model relies on most when making
+                    predictions. The importance score indicates how much each feature reduces prediction
+                    error when used for splitting decisions in the trees.
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Interpretation</div>
+                    <p class="explanation__text">
+                        Engineered features like <strong>TotalSF</strong> and <strong>OverallScore</strong>
+                        appear prominently, validating our feature engineering decisions. The model
+                        confirms that total square footage and overall quality/condition are the primary
+                        value drivers. Interestingly, <strong>HouseAge</strong> ranks higher than the
+                        raw <code>YearBuilt</code>, showing that the engineered feature provides a
+                        cleaner signal.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price by Neighborhood -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/price_by_neighborhood.png') }}" alt="Top 10 Neighborhoods by Median Sale Price">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Top 10 Neighborhoods by Median Price</h3>
+                <p class="chart-card__description">
+                    Neighborhood is the strongest categorical predictor. The premium neighborhoods
+                    (Northridge Heights, Northridge, Stone Brook) achieve median prices above $300,000,
+                    while the overall dataset median is around $163,000.
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Interpretation</div>
+                    <p class="explanation__text">
+                        Location acts as a proxy for many unmeasured factors: school quality, crime rates,
+                        proximity to amenities, and community desirability. The one-hot encoding of
+                        Neighborhood creates binary features that let the model learn a distinct price
+                        premium or discount for each location.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price by Year -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/price_by_year.png') }}" alt="Median Sale Price by Year Built">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Price Trend by Year Built</h3>
+                <p class="chart-card__description">
+                    Newer homes consistently sell for more, with a strong upward trend from the 1950s
+                    onward. Homes built after 2000 command the highest prices, reflecting modern
+                    construction standards, energy efficiency, and updated designs.
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Interpretation</div>
+                    <p class="explanation__text">
+                        The trend isn't strictly linear — there are plateaus and dips corresponding to
+                        different construction eras. This non-linearity is why our <strong>HouseAge</strong>
+                        feature (which linearizes the relationship) outperforms raw <code>YearBuilt</code>
+                        in most models.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAE / RMSE Charts -->
+        <div class="grid grid--2 mb-8">
+            <div class="chart-card">
+                <div class="chart-card__image">
+                    <img src="{{ url_for('static', filename='images/charts/model_mae_comparison.png') }}" alt="MAE Comparison">
+                </div>
+                <div class="chart-card__content">
+                    <h3 class="chart-card__title">Mean Absolute Error</h3>
+                    <p class="chart-card__description">
+                        MAE shows the average dollar amount by which predictions differ from actual prices.
+                        Lower is better. The best model's predictions are off by approximately this amount
+                        on average.
+                    </p>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card__image">
+                    <img src="{{ url_for('static', filename='images/charts/model_rmse_comparison.png') }}" alt="RMSE Comparison">
+                </div>
+                <div class="chart-card__content">
+                    <h3 class="chart-card__title">Root Mean Squared Error</h3>
+                    <p class="chart-card__description">
+                        RMSE penalizes large errors more heavily than MAE. If RMSE is much larger than MAE,
+                        it indicates the model occasionally makes very large errors (outlier predictions).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Feature Engineering — House Price Prediction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 4</span>
+        <h1 class="page-header__title">Feature Engineering</h1>
+        <p class="page-header__description">
+            Crafting new features from existing data to give the model richer signals about
+            what makes a property valuable. Each feature is driven by real-estate domain knowledge.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="grid grid--2">
+
+        <!-- HouseAge -->
+        <div class="feature-card">
+            <div class="feature-card__name">HouseAge</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">HouseAge = YrSold − YearBuilt</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">train</span>[<span class="string">'HouseAge'</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="string">'YrSold'</span>] <span class="operator">-</span> <span class="variable">train</span>[<span class="string">'YearBuilt'</span>]</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    Buyers care about how <em>old</em> a house is, not the absolute year it was built.
+                    A house built in 1960 and sold in 2008 (48 years old) is different from one built
+                    in 2005 and sold in 2008 (3 years old). Age captures depreciation and wear.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    The raw year is a large number (e.g., 1985) that doesn't linearly relate to price.
+                    Age (e.g., 23 years) directly measures depreciation, which has a much cleaner
+                    negative correlation with sale price.
+                </p>
+            </div>
+        </div>
+
+        <!-- RemodAge -->
+        <div class="feature-card">
+            <div class="feature-card__name">RemodAge</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">RemodAge = YrSold − YearRemodAdd</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">train</span>[<span class="string">'RemodAge'</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="string">'YrSold'</span>] <span class="operator">-</span> <span class="variable">train</span>[<span class="string">'YearRemodAdd'</span>]</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    A recently remodeled house commands a higher price than one that hasn't been
+                    updated since it was built. This captures how "fresh" the home feels to buyers,
+                    independent of its construction year.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    Renovation resets perceived age. A 50-year-old home remodeled 2 years ago
+                    behaves like a newer home in the market. RemodAge captures this economic reality.
+                </p>
+            </div>
+        </div>
+
+        <!-- TotalSF -->
+        <div class="feature-card">
+            <div class="feature-card__name">TotalSF</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">TotalSF = GrLivArea + TotalBsmtSF</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">train</span>[<span class="string">'TotalSF'</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="string">'GrLivArea'</span>] <span class="operator">+</span> <span class="variable">train</span>[<span class="string">'TotalBsmtSF'</span>]</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    Buyers evaluate total usable space, not just above-ground vs. basement separately.
+                    A finished basement adds significant functional square footage that impacts value.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    Combining two correlated features into one reduces multicollinearity while
+                    preserving the total information. Models can learn a single coefficient for
+                    "total space" instead of balancing two correlated inputs.
+                </p>
+            </div>
+        </div>
+
+        <!-- TotalBath -->
+        <div class="feature-card">
+            <div class="feature-card__name">TotalBath</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">TotalBath = FullBath + 0.5 × HalfBath + BsmtFullBath + 0.5 × BsmtHalfBath</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">train</span>[<span class="string">'TotalBath'</span>] <span class="operator">=</span> (
+    <span class="variable">train</span>[<span class="string">'FullBath'</span>] <span class="operator">+</span>
+    <span class="number">0.5</span> <span class="operator">*</span> <span class="variable">train</span>[<span class="string">'HalfBath'</span>] <span class="operator">+</span>
+    <span class="variable">train</span>[<span class="string">'BsmtFullBath'</span>] <span class="operator">+</span>
+    <span class="number">0.5</span> <span class="operator">*</span> <span class="variable">train</span>[<span class="string">'BsmtHalfBath'</span>]
+)</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    Bathroom count is a key real-estate metric. A half bath counts as 0.5 because
+                    it has a toilet and sink but no shower/tub. This weighted sum matches how
+                    real-estate agents actually count bathrooms in listings.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    Consolidates 4 bathroom features into 1, reducing dimensionality while
+                    encoding real-world valuation logic. A 3.5-bath home is consistently
+                    worth more than a 2-bath home.
+                </p>
+            </div>
+        </div>
+
+        <!-- OverallScore -->
+        <div class="feature-card">
+            <div class="feature-card__name">OverallScore</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">OverallScore = OverallQual × OverallCond</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">train</span>[<span class="string">'OverallScore'</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="string">'OverallQual'</span>] <span class="operator">*</span> <span class="variable">train</span>[<span class="string">'OverallCond'</span>]</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    A high-quality house in poor condition is worth less than a high-quality house
+                    in excellent condition. Multiplication captures this interaction: a 10-quality,
+                    5-condition home (score=50) vs. a 10-quality, 9-condition home (score=90).
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    Linear models can't learn feature interactions on their own — they treat
+                    OverallQual and OverallCond independently. This engineered interaction
+                    term gives the model the ability to capture their combined effect.
+                </p>
+            </div>
+        </div>
+
+        <!-- HasGarage -->
+        <div class="feature-card">
+            <div class="feature-card__name">HasGarage</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">HasGarage = 1 if GarageArea > 0, else 0</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">df</span>[<span class="string">'HasGarage'</span>] <span class="operator">=</span> (<span class="variable">df</span>[<span class="string">'GarageArea'</span>] <span class="operator">></span> <span class="number">0</span>).<span class="function">astype</span>(<span class="function">int</span>)</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    The binary presence/absence of a garage is often more important than its exact
+                    size. Having <em>any</em> garage significantly impacts property value.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    Creates a clean signal the model can use as a threshold. Combined with
+                    GarageArea, the model can learn both "does it have a garage?" (binary)
+                    and "how big is it?" (continuous).
+                </p>
+            </div>
+        </div>
+
+        <!-- HasPool -->
+        <div class="feature-card">
+            <div class="feature-card__name">HasPool</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">HasPool = 1 if PoolArea > 0, else 0</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">df</span>[<span class="string">'HasPool'</span>] <span class="operator">=</span> (<span class="variable">df</span>[<span class="string">'PoolArea'</span>] <span class="operator">></span> <span class="number">0</span>).<span class="function">astype</span>(<span class="function">int</span>)</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    Pools are rare (only 7 out of 1,460 properties). Their presence signals a
+                    luxury property, which significantly impacts market positioning and price.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    With only 7 pool properties, the binary flag is more informative than the
+                    continuous PoolArea, which is 0 for 99.5% of rows. The flag acts as a
+                    luxury indicator.
+                </p>
+            </div>
+        </div>
+
+        <!-- HasBasement -->
+        <div class="feature-card">
+            <div class="feature-card__name">HasBasement</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">HasBasement = 1 if TotalBsmtSF > 0, else 0</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">df</span>[<span class="string">'HasBasement'</span>] <span class="operator">=</span> (<span class="variable">df</span>[<span class="string">'TotalBsmtSF'</span>] <span class="operator">></span> <span class="number">0</span>).<span class="function">astype</span>(<span class="function">int</span>)</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    Basements add significant value through extra living/storage space.
+                    Their presence is a key differentiator, especially in the Midwest.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    Similar to HasGarage — the binary presence captures a step-change in value
+                    that continuous TotalBsmtSF alone might not cleanly represent at zero.
+                </p>
+            </div>
+        </div>
+
+        <!-- HasFireplace -->
+        <div class="feature-card">
+            <div class="feature-card__name">HasFireplace</div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Formula</div>
+                <div class="formula">HasFireplace = 1 if Fireplaces > 0, else 0</div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Python Code</div>
+                <div class="code-block" style="margin: 0;">
+<pre><span class="variable">df</span>[<span class="string">'HasFireplace'</span>] <span class="operator">=</span> (<span class="variable">df</span>[<span class="string">'Fireplaces'</span>] <span class="operator">></span> <span class="number">0</span>).<span class="function">astype</span>(<span class="function">int</span>)</pre>
+                </div>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Business Intuition</div>
+                <p class="card__body" style="margin:0;">
+                    Fireplaces are a desirable amenity that signal comfort and character.
+                    Having at least one fireplace meaningfully increases perceived home value.
+                </p>
+            </div>
+
+            <div class="feature-card__section">
+                <div class="feature-card__label">Why It Improves Prediction</div>
+                <p class="card__body" style="margin:0;">
+                    The binary flag separates "no fireplace" from "has fireplace" more cleanly
+                    than the count, since the jump from 0→1 fireplace has a much larger
+                    price impact than 1→2.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

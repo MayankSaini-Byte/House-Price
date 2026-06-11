@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}House Price Prediction — AI-Powered Property Valuation{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════════════════════════════ -->
+<!-- HERO SECTION                                -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="hero" id="hero">
+    <div class="hero__bg" style="background-image: url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=80');"></div>
+    <div class="hero__overlay"></div>
+
+    <div class="hero__content">
+        <div class="hero__label">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3"/></svg>
+            Machine Learning Case Study
+        </div>
+
+        <h1 class="hero__title">House Price Prediction<br>using Machine Learning</h1>
+
+        <p class="hero__subtitle">
+            Predicting residential property prices using data-driven machine learning models
+            and feature engineering on the Ames Housing dataset.
+        </p>
+
+        <div class="hero__actions">
+            <a href="{{ url_for('eda.eda') }}" class="btn btn--primary btn--large">Explore Project</a>
+            <a href="{{ url_for('prediction.predict_page') }}" class="btn btn--secondary btn--large" style="color: #fff; border-color: rgba(255,255,255,0.25);">Try Prediction</a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STATISTICS CARDS                             -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="stats-section">
+    <div class="container">
+        <div class="grid grid--4">
+            <div class="stat-card">
+                <div class="stat-card__icon">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="36" height="36" rx="4"/>
+                        <line x1="6" y1="18" x2="42" y2="18"/>
+                        <line x1="18" y1="6" x2="18" y2="42"/>
+                    </svg>
+                </div>
+                <div class="stat-card__value">{{ stats.get('rows', 1460) }}</div>
+                <div class="stat-card__label">Dataset Samples</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card__icon">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 40V20l8-4v24"/>
+                        <path d="M20 40V14l8-6v32"/>
+                        <path d="M32 40V22l8-8v26"/>
+                    </svg>
+                </div>
+                <div class="stat-card__value">{{ stats.get('columns', 80) }}</div>
+                <div class="stat-card__label">Total Features</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card__icon">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="24" cy="24" r="18"/>
+                        <path d="M24 12v12l8 8"/>
+                    </svg>
+                </div>
+                <div class="stat-card__value">{{ stats.get('models_tested', 5) }}</div>
+                <div class="stat-card__label">Models Tested</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card__icon">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6,36 16,20 26,28 42,8"/>
+                        <polyline points="34,8 42,8 42,16"/>
+                    </svg>
+                </div>
+                <div class="stat-card__value">{{ stats.get('best_r2', 0.9064) }}</div>
+                <div class="stat-card__label">Best R² Score</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ARCHITECTURE DIAGRAM                        -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="architecture section">
+    <div class="container">
+        <div class="section__header">
+            <span class="section__label">Workflow</span>
+            <h2 class="section__title">Project Architecture</h2>
+            <p class="section__subtitle">
+                End-to-end machine learning pipeline from raw data to accurate predictions.
+            </p>
+        </div>
+
+        <div class="architecture__diagram">
+            <!-- Step 1: Dataset -->
+            <div class="arch-step">
+                <div class="arch-step__icon">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <ellipse cx="22" cy="10" rx="16" ry="5"/>
+                        <path d="M6 10v24c0 2.76 7.16 5 16 5s16-2.24 16-5V10"/>
+                        <path d="M6 22c0 2.76 7.16 5 16 5s16-2.24 16-5"/>
+                    </svg>
+                </div>
+                <div class="arch-step__text">
+                    <div class="arch-step__title">Dataset</div>
+                    <p class="arch-step__desc">Ames Housing — 1,460 records, 80 features</p>
+                </div>
+            </div>
+
+            <div class="arch-arrow"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3v14m0 0l-5-5m5 5l5-5"/></svg></div>
+
+            <!-- Step 2: Data Cleaning -->
+            <div class="arch-step">
+                <div class="arch-step__icon">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M10 8h24M10 16h24M10 24h16M10 32h20"/>
+                        <path d="M34 22l4 4-4 4" stroke-width="2"/>
+                        <line x1="26" y1="26" x2="38" y2="26" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="arch-step__text">
+                    <div class="arch-step__title">Data Cleaning</div>
+                    <p class="arch-step__desc">Missing value imputation, outlier handling, encoding</p>
+                </div>
+            </div>
+
+            <div class="arch-arrow"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3v14m0 0l-5-5m5 5l5-5"/></svg></div>
+
+            <!-- Step 3: Feature Engineering -->
+            <div class="arch-step">
+                <div class="arch-step__icon">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="6" y="6" width="14" height="14" rx="2"/>
+                        <rect x="24" y="6" width="14" height="14" rx="2"/>
+                        <rect x="15" y="24" width="14" height="14" rx="2" fill="currentColor" opacity="0.15"/>
+                        <line x1="13" y1="20" x2="22" y2="24"/>
+                        <line x1="31" y1="20" x2="22" y2="24"/>
+                    </svg>
+                </div>
+                <div class="arch-step__text">
+                    <div class="arch-step__title">Feature Engineering</div>
+                    <p class="arch-step__desc">10 new features — TotalSF, HouseAge, OverallScore, etc.</p>
+                </div>
+            </div>
+
+            <div class="arch-arrow"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3v14m0 0l-5-5m5 5l5-5"/></svg></div>
+
+            <!-- Step 4: Model Training -->
+            <div class="arch-step">
+                <div class="arch-step__icon">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="22" cy="22" r="16"/>
+                        <circle cx="22" cy="22" r="8" fill="currentColor" opacity="0.15"/>
+                        <circle cx="22" cy="22" r="2" fill="currentColor"/>
+                        <path d="M22 6v4M22 34v4M6 22h4M34 22h4"/>
+                    </svg>
+                </div>
+                <div class="arch-step__text">
+                    <div class="arch-step__title">Model Training</div>
+                    <p class="arch-step__desc">5 regression models trained and cross-validated</p>
+                </div>
+            </div>
+
+            <div class="arch-arrow"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3v14m0 0l-5-5m5 5l5-5"/></svg></div>
+
+            <!-- Step 5: Evaluation -->
+            <div class="arch-step">
+                <div class="arch-step__icon">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polyline points="6,34 14,22 22,28 30,14 38,18"/>
+                        <circle cx="14" cy="22" r="2" fill="currentColor"/>
+                        <circle cx="22" cy="28" r="2" fill="currentColor"/>
+                        <circle cx="30" cy="14" r="2" fill="currentColor"/>
+                        <circle cx="38" cy="18" r="2" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="arch-step__text">
+                    <div class="arch-step__title">Model Evaluation</div>
+                    <p class="arch-step__desc">R², MAE, RMSE comparison across all models</p>
+                </div>
+            </div>
+
+            <div class="arch-arrow"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3v14m0 0l-5-5m5 5l5-5"/></svg></div>
+
+            <!-- Step 6: Prediction -->
+            <div class="arch-step" style="border-color: var(--color-accent);">
+                <div class="arch-step__icon" style="color: var(--color-accent);">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M22 6l16 10v12L22 38 6 28V16z"/>
+                        <path d="M22 6v32M6 16l16 10 16-10"/>
+                        <path d="M6 28l16-10 16 10" opacity="0.4"/>
+                    </svg>
+                </div>
+                <div class="arch-step__text">
+                    <div class="arch-step__title">Prediction System</div>
+                    <p class="arch-step__desc">Real-time price prediction via interactive web interface</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- QUICK OVERVIEW SECTION                      -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section section--alt">
+    <div class="container">
+        <div class="section__header">
+            <span class="section__label">Overview</span>
+            <h2 class="section__title">What This Project Does</h2>
+        </div>
+
+        <div class="grid grid--3">
+            <div class="card">
+                <div class="card__header">
+                    <h4 class="card__title">Data-Driven Analysis</h4>
+                </div>
+                <p class="card__body">
+                    Comprehensive exploratory data analysis of the Ames Housing dataset,
+                    uncovering key relationships between property features and sale prices
+                    through statistical visualization.
+                </p>
+                <a href="{{ url_for('eda.eda') }}" class="btn btn--secondary" style="margin-top: var(--space-4);">View Analysis</a>
+            </div>
+
+            <div class="card">
+                <div class="card__header">
+                    <h4 class="card__title">Advanced Modeling</h4>
+                </div>
+                <p class="card__body">
+                    Five machine learning models rigorously trained and evaluated,
+                    including Linear Regression, Random Forest, Gradient Boosting,
+                    SVR, and KNN — with full hyperparameter documentation.
+                </p>
+                <a href="{{ url_for('models.models') }}" class="btn btn--secondary" style="margin-top: var(--space-4);">Compare Models</a>
+            </div>
+
+            <div class="card">
+                <div class="card__header">
+                    <h4 class="card__title">Live Predictions</h4>
+                </div>
+                <p class="card__body">
+                    Interactive prediction engine powered by the best-performing model.
+                    Input property features and receive instant price estimates
+                    with confidence indicators.
+                </p>
+                <a href="{{ url_for('prediction.predict_page') }}" class="btn btn--secondary" style="margin-top: var(--space-4);">Try It Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

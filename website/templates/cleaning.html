@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Data Cleaning — House Price Prediction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 3</span>
+        <h1 class="page-header__title">Data Cleaning Process</h1>
+        <p class="page-header__description">
+            Step-by-step walkthrough of how we handled missing values, treated numerical and categorical
+            features, and prepared the dataset for machine learning.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Step 1: Categorical Missing Values -->
+    <div class="step">
+        <div class="step__number">1</div>
+        <div class="step__content">
+            <h3 class="step__title">Categorical Missing Values → Fill with "None"</h3>
+            <p class="card__body">
+                Many categorical features have missing values that don't represent "unknown data" — they mean
+                the property <strong>lacks that feature entirely</strong>. For example, a missing <code>PoolQC</code>
+                means "no pool," not "pool quality unknown."
+            </p>
+
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="comment"># Columns where NaN means "feature not present"</span>
+<span class="variable">cols_none</span> <span class="operator">=</span> [
+    <span class="string">'Alley'</span>, <span class="string">'MasVnrType'</span>, <span class="string">'BsmtQual'</span>, <span class="string">'BsmtCond'</span>,
+    <span class="string">'BsmtExposure'</span>, <span class="string">'BsmtFinType1'</span>, <span class="string">'BsmtFinType2'</span>,
+    <span class="string">'FireplaceQu'</span>, <span class="string">'GarageType'</span>, <span class="string">'GarageFinish'</span>,
+    <span class="string">'GarageQual'</span>, <span class="string">'GarageCond'</span>, <span class="string">'PoolQC'</span>,
+    <span class="string">'Fence'</span>, <span class="string">'MiscFeature'</span>
+]
+
+<span class="comment"># Fill NaN with "None" to indicate absence</span>
+<span class="variable">train</span>[<span class="variable">cols_none</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="variable">cols_none</span>].<span class="function">fillna</span>(<span class="string">"None"</span>)
+<span class="variable">test</span>[<span class="variable">cols_none</span>] <span class="operator">=</span> <span class="variable">test</span>[<span class="variable">cols_none</span>].<span class="function">fillna</span>(<span class="string">"None"</span>)</pre>
+            </div>
+
+            <div class="explanation">
+                <div class="explanation__title">Why This Is Necessary</div>
+                <p class="explanation__text">
+                    If we left these as NaN, the model would either crash (sklearn doesn't handle NaN in categorical
+                    features) or impute them incorrectly. By filling with "None," we preserve the semantic meaning:
+                    this is a valid category representing "absence." The OneHotEncoder will then create a binary
+                    column for "None," letting the model learn that having no pool/garage/basement is a distinct
+                    property characteristic.
+                </p>
+            </div>
+
+            <div class="explanation">
+                <div class="explanation__title">Expected Output</div>
+                <p class="explanation__text">
+                    After this step, columns like <code>PoolQC</code> go from having 1,453 NaN values to having
+                    1,453 "None" values. The column is now complete with no missing data, and every value is a
+                    valid category string.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: LotFrontage -->
+    <div class="step">
+        <div class="step__number">2</div>
+        <div class="step__content">
+            <h3 class="step__title">LotFrontage → Neighborhood Median Imputation</h3>
+            <p class="card__body">
+                <code>LotFrontage</code> (linear feet of street connected to the property) has 259 missing values.
+                Unlike the categorical features above, this is genuinely missing data that we need to estimate.
+            </p>
+
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="comment"># Impute LotFrontage using the median of each Neighborhood</span>
+<span class="variable">train</span>[<span class="string">'LotFrontage'</span>] <span class="operator">=</span> <span class="variable">train</span>.<span class="function">groupby</span>(<span class="string">'Neighborhood'</span>)[<span class="string">'LotFrontage'</span>].<span class="function">transform</span>(
+    <span class="keyword">lambda</span> <span class="variable">x</span>: <span class="variable">x</span>.<span class="function">fillna</span>(<span class="variable">x</span>.<span class="function">median</span>())
+)</pre>
+            </div>
+
+            <div class="explanation">
+                <div class="explanation__title">Why Neighborhood Median?</div>
+                <p class="explanation__text">
+                    Properties in the same neighborhood tend to have similar lot sizes and frontages due to
+                    zoning regulations and subdivision design. Using the <strong>global median</strong> would
+                    treat a rural property and a downtown townhouse the same. The <strong>neighborhood-specific
+                    median</strong> is a much more accurate estimate because it accounts for local lot patterns.
+                    This technique is called <strong>group-wise imputation</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Numerical Fills -->
+    <div class="step">
+        <div class="step__number">3</div>
+        <div class="step__content">
+            <h3 class="step__title">Numerical Features → Zero Fill</h3>
+            <p class="card__body">
+                For features like <code>MasVnrArea</code> (masonry veneer area) and <code>GarageYrBlt</code>
+                (year garage was built), missing values mean the feature doesn't exist — no veneer, no garage.
+            </p>
+
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="comment"># No masonry veneer = 0 square feet of veneer area</span>
+<span class="variable">train</span>[<span class="string">'MasVnrArea'</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="string">'MasVnrArea'</span>].<span class="function">fillna</span>(<span class="number">0</span>)
+
+<span class="comment"># No garage = year built is 0 (sentinel value)</span>
+<span class="variable">train</span>[<span class="string">'GarageYrBlt'</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="string">'GarageYrBlt'</span>].<span class="function">fillna</span>(<span class="number">0</span>)</pre>
+            </div>
+
+            <div class="explanation">
+                <div class="explanation__title">Why Not Median or Mean?</div>
+                <p class="explanation__text">
+                    Using the median here would be misleading. If a house has no masonry veneer, assigning the
+                    dataset's average veneer area would incorrectly tell the model "this house has some veneer."
+                    Zero correctly communicates "this feature is absent." For <code>GarageYrBlt</code>, zero
+                    serves as a <strong>sentinel value</strong> — the model will learn that houses with
+                    GarageYrBlt=0 are fundamentally different (they have no garage at all).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Electrical -->
+    <div class="step">
+        <div class="step__number">4</div>
+        <div class="step__content">
+            <h3 class="step__title">Electrical → Mode Imputation</h3>
+            <p class="card__body">
+                <code>Electrical</code> has only 1 missing value. Since every house has an electrical system,
+                this is genuinely missing data — we fill with the most common value.
+            </p>
+
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="comment"># Fill the single missing Electrical value with the mode</span>
+<span class="variable">train</span>[<span class="string">'Electrical'</span>] <span class="operator">=</span> <span class="variable">train</span>[<span class="string">'Electrical'</span>].<span class="function">fillna</span>(
+    <span class="variable">train</span>[<span class="string">'Electrical'</span>].<span class="function">mode</span>()[<span class="number">0</span>]
+)</pre>
+            </div>
+
+            <div class="explanation">
+                <div class="explanation__title">Why Mode?</div>
+                <p class="explanation__text">
+                    For categorical features with genuine missing data (not "absence"), the <strong>mode</strong>
+                    (most frequent value) is the safest imputation strategy. Since "SBrkr" (Standard Circuit
+                    Breakers) accounts for ~91% of values, it's a statistically sound assumption. With only
+                    1 missing value out of 1,460, the impact on model performance is negligible regardless
+                    of imputation strategy.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 5: Preprocessing Pipeline -->
+    <div class="step">
+        <div class="step__number">5</div>
+        <div class="step__content">
+            <h3 class="step__title">Encoding Strategy — Preprocessing Pipeline</h3>
+            <p class="card__body">
+                After cleaning, we apply a <strong>ColumnTransformer</strong> that handles numeric and
+                categorical features differently through separate sub-pipelines.
+            </p>
+
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="keyword">from</span> sklearn.compose <span class="keyword">import</span> ColumnTransformer
+<span class="keyword">from</span> sklearn.pipeline <span class="keyword">import</span> Pipeline
+<span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler, OneHotEncoder
+
+<span class="comment"># Identify column types</span>
+<span class="variable">num_cols</span> <span class="operator">=</span> X_train.<span class="function">select_dtypes</span>(include=[<span class="string">'int64'</span>, <span class="string">'float64'</span>]).columns
+<span class="variable">cat_cols</span> <span class="operator">=</span> X_train.<span class="function">select_dtypes</span>(include=[<span class="string">'object'</span>]).columns
+
+<span class="comment"># Build the preprocessing pipeline</span>
+<span class="variable">preprocessor</span> <span class="operator">=</span> <span class="function">ColumnTransformer</span>([
+    (<span class="string">'num'</span>, <span class="function">Pipeline</span>([(<span class="string">'scaler'</span>, <span class="function">StandardScaler</span>())]), <span class="variable">num_cols</span>),
+    (<span class="string">'cat'</span>, <span class="function">Pipeline</span>([(<span class="string">'encoder'</span>, <span class="function">OneHotEncoder</span>(
+        handle_unknown<span class="operator">=</span><span class="string">'ignore'</span>,
+        sparse_output<span class="operator">=</span><span class="keyword">False</span>
+    ))]), <span class="variable">cat_cols</span>)
+])</pre>
+            </div>
+
+            <div class="explanation">
+                <div class="explanation__title">How It Works</div>
+                <p class="explanation__text">
+                    <strong>StandardScaler</strong> normalizes numeric features to have mean=0 and std=1. This is
+                    critical for distance-based models (SVR, KNN) where features with larger scales would dominate.
+                    <strong>OneHotEncoder</strong> converts each categorical value into a binary column (e.g.,
+                    Neighborhood_NAmes=1, Neighborhood_NridgHt=0). The <code>handle_unknown='ignore'</code>
+                    parameter ensures the pipeline doesn't crash if test data contains categories not seen during training.
+                </p>
+            </div>
+
+            <div class="explanation">
+                <div class="explanation__title">Expected Output</div>
+                <p class="explanation__text">
+                    After transformation, the feature matrix expands from ~80 columns to ~280+ columns (due to
+                    one-hot encoding). Each numeric feature is centered around 0, and each categorical feature
+                    is represented as a set of binary indicator columns.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

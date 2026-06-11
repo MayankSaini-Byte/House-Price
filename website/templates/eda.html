@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Dataset & EDA — House Price Prediction{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 2</span>
+        <h1 class="page-header__title">Dataset & Exploratory Analysis</h1>
+        <p class="page-header__description">
+            Deep-dive into the Ames Housing dataset — understanding distributions, correlations,
+            missing values, and key relationships that drive house prices.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ═══ Dataset Overview ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-8">Dataset Overview</h2>
+        <div class="eda-overview">
+            <div class="eda-overview__item">
+                <div class="eda-overview__value">{{ stats.get('rows', 1460) }}</div>
+                <div class="eda-overview__label">Total Rows</div>
+            </div>
+            <div class="eda-overview__item">
+                <div class="eda-overview__value">{{ stats.get('columns', 81) }}</div>
+                <div class="eda-overview__label">Total Columns</div>
+            </div>
+            <div class="eda-overview__item">
+                <div class="eda-overview__value">{{ stats.get('missing_cols', 19) }}</div>
+                <div class="eda-overview__label">Columns with Missing Data</div>
+            </div>
+            <div class="eda-overview__item">
+                <div class="eda-overview__value">{{ stats.get('numeric_features', 37) }}+{{ stats.get('categorical_features', 43) }}</div>
+                <div class="eda-overview__label">Numeric + Categorical</div>
+            </div>
+        </div>
+
+        <div class="card mb-8">
+            <h4 class="card__title mb-4">About the Dataset</h4>
+            <p class="card__body">
+                The Ames Housing dataset was compiled by Dean De Cock and describes the sale of individual residential
+                properties in Ames, Iowa from 2006 to 2010. It contains <strong>1,460 training observations</strong> with
+                <strong>80 explanatory variables</strong> covering almost every aspect of residential homes —
+                from the number of bathrooms to the type of foundation and the neighborhood.
+            </p>
+            <p class="card__body" style="margin-bottom: 0;">
+                The target variable is <code>SalePrice</code>, which represents the property's sale price in dollars.
+                Features are split into <strong>37 numerical</strong> (e.g., LotArea, GrLivArea, YearBuilt) and
+                <strong>43 categorical</strong> (e.g., Neighborhood, HouseStyle, SaleCondition) variables.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══ EDA Charts ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-8">Exploratory Data Analysis</h2>
+
+        <!-- Chart 1: Price Distribution -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/price_distribution.png') }}" alt="Sale Price Distribution Histogram">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Sale Price Distribution</h3>
+                <p class="chart-card__description">
+                    The sale price distribution is <strong>right-skewed</strong>, with most properties selling between
+                    $100,000 and $250,000. A small number of luxury properties extend the tail beyond $500,000.
+                    This skewness is important because many ML models assume normally distributed targets.
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Why This Matters</div>
+                    <p class="explanation__text">
+                        We apply a <strong>log transformation</strong> (<code>np.log1p</code>) to the target variable to
+                        normalize the distribution. This reduces the influence of extreme outliers on the model and
+                        improves prediction accuracy. The reverse transform (<code>np.expm1</code>) is applied when
+                        generating final price predictions.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Correlation Heatmap -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/correlation_heatmap.png') }}" alt="Correlation Heatmap of Top 15 Features">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Correlation Heatmap — Top 15 Features</h3>
+                <p class="chart-card__description">
+                    This heatmap shows the Pearson correlation coefficients between the top 15 features most
+                    correlated with SalePrice. <strong>OverallQual</strong> (0.79) and <strong>GrLivArea</strong> (0.71)
+                    emerge as the strongest predictors.
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Key Insight</div>
+                    <p class="explanation__text">
+                        Notice that <strong>GarageCars</strong> and <strong>GarageArea</strong> are highly correlated
+                        with each other (0.88), indicating multicollinearity. Similarly, <strong>TotRmsAbvGrd</strong>
+                        is strongly correlated with <strong>GrLivArea</strong>. When features are highly correlated,
+                        they carry redundant information — this motivates our feature engineering approach where
+                        we create composite features like <code>TotalSF</code>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 3: Missing Values -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/missing_values.png') }}" alt="Missing Values by Feature">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Missing Value Analysis</h3>
+                <p class="chart-card__description">
+                    19 columns contain missing values. The most severe are <strong>PoolQC</strong> (99.5% missing),
+                    <strong>MiscFeature</strong> (96.3%), <strong>Alley</strong> (93.8%), and <strong>Fence</strong> (80.8%).
+                    However, many of these aren't truly "missing" — they indicate the <em>absence</em> of a feature
+                    (e.g., no pool, no fence).
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Handling Strategy</div>
+                    <p class="explanation__text">
+                        For categorical features where missing means "absence," we fill with <code>"None"</code>.
+                        For <strong>LotFrontage</strong>, we use the <strong>neighborhood median</strong> since
+                        neighboring properties tend to have similar lot frontages. Numerical features like
+                        <strong>MasVnrArea</strong> and <strong>GarageYrBlt</strong> are filled with 0 when
+                        the feature doesn't exist.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 4: Price vs Living Area -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/price_vs_area.png') }}" alt="Sale Price vs Living Area Scatter Plot">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Sale Price vs. Above Ground Living Area</h3>
+                <p class="chart-card__description">
+                    A clear <strong>positive linear relationship</strong> exists between living area and sale price.
+                    Larger homes consistently sell for higher prices, validating GrLivArea as a critical predictor.
+                    Two notable outliers appear at ~4,500+ sq ft with lower-than-expected prices.
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Why This Matters</div>
+                    <p class="explanation__text">
+                        This strong linear relationship is precisely why <strong>Linear Regression</strong> performs
+                        so well on this dataset. The relationship between living area and price is almost proportional,
+                        which is exactly the type of pattern linear models excel at capturing. The outliers could be
+                        properties with unusual circumstances (e.g., foreclosures, poor condition despite large area).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 5: Price by Quality -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/price_by_quality.png') }}" alt="Median Sale Price by Overall Quality">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">Median Sale Price by Overall Quality</h3>
+                <p class="chart-card__description">
+                    Overall quality rating (1–10) shows a near-exponential relationship with sale price.
+                    Properties rated 10 sell for over <strong>3× the price</strong> of those rated 5.
+                    This makes <code>OverallQual</code> the single most important predictor in the dataset.
+                </p>
+                <div class="explanation mt-4">
+                    <div class="explanation__title">Feature Engineering Implication</div>
+                    <p class="explanation__text">
+                        The non-linear growth pattern suggests that combining OverallQual with OverallCond
+                        (via multiplication) into an <code>OverallScore</code> feature could capture
+                        the interaction effect between quality and condition, providing the model with
+                        a richer signal.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Predict House Price — House Price Prediction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 7</span>
+        <h1 class="page-header__title">Interactive Price Prediction</h1>
+        <p class="page-header__description">
+            Enter property details below and get an instant AI-powered price estimate
+            using our trained machine learning model.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="predict-layout">
+
+        <!-- ═══ Input Form ═══ -->
+        <div class="predict-form" id="predict-form-container">
+            <h3 style="margin-bottom: var(--space-6);">Property Details</h3>
+
+            <form id="prediction-form">
+                <div class="predict-form__grid">
+
+                    <div class="form-group">
+                        <label for="OverallQual">Overall Quality (1-10)</label>
+                        <input type="number" id="OverallQual" name="OverallQual" min="1" max="10" value="6" required>
+                        <span class="form-group__hint">1 = Very Poor, 10 = Very Excellent</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="OverallCond">Overall Condition (1-10)</label>
+                        <input type="number" id="OverallCond" name="OverallCond" min="1" max="10" value="5" required>
+                        <span class="form-group__hint">1 = Very Poor, 10 = Very Excellent</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="GrLivArea">Above Ground Living Area (sq ft)</label>
+                        <input type="number" id="GrLivArea" name="GrLivArea" min="300" max="6000" value="1500" required>
+                        <span class="form-group__hint">Typical range: 500 – 3,000 sq ft</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="TotalBsmtSF">Total Basement Area (sq ft)</label>
+                        <input type="number" id="TotalBsmtSF" name="TotalBsmtSF" min="0" max="5000" value="1000" required>
+                        <span class="form-group__hint">Enter 0 if no basement</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="GarageArea">Garage Area (sq ft)</label>
+                        <input type="number" id="GarageArea" name="GarageArea" min="0" max="1500" value="480" required>
+                        <span class="form-group__hint">Enter 0 if no garage</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="GarageCars">Garage Capacity (cars)</label>
+                        <input type="number" id="GarageCars" name="GarageCars" min="0" max="5" value="2" required>
+                        <span class="form-group__hint">Number of cars the garage can hold</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="YearBuilt">Year Built</label>
+                        <input type="number" id="YearBuilt" name="YearBuilt" min="1870" max="2010" value="2000" required>
+                        <span class="form-group__hint">Original construction year</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="YearRemodAdd">Year Remodeled</label>
+                        <input type="number" id="YearRemodAdd" name="YearRemodAdd" min="1950" max="2010" value="2005" required>
+                        <span class="form-group__hint">Same as Year Built if no remodel</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="FullBath">Full Bathrooms</label>
+                        <input type="number" id="FullBath" name="FullBath" min="0" max="5" value="2" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="HalfBath">Half Bathrooms</label>
+                        <input type="number" id="HalfBath" name="HalfBath" min="0" max="3" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="BedroomAbvGr">Bedrooms Above Ground</label>
+                        <input type="number" id="BedroomAbvGr" name="BedroomAbvGr" min="0" max="8" value="3" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="LotArea">Lot Area (sq ft)</label>
+                        <input type="number" id="LotArea" name="LotArea" min="1000" max="100000" value="9000" required>
+                        <span class="form-group__hint">Total lot size</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Fireplaces">Fireplaces</label>
+                        <input type="number" id="Fireplaces" name="Fireplaces" min="0" max="4" value="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="PoolArea">Pool Area (sq ft)</label>
+                        <input type="number" id="PoolArea" name="PoolArea" min="0" max="800" value="0">
+                        <span class="form-group__hint">Enter 0 if no pool</span>
+                    </div>
+
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--large" style="width: 100%; margin-top: var(--space-6); justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                    </svg>
+                    Get Price Estimate
+                </button>
+            </form>
+        </div>
+
+        <!-- ═══ Result Panel ═══ -->
+        <div class="predict-result" id="predict-result">
+            <!-- Empty State -->
+            <div id="result-empty" class="predict-result--empty">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="8" y="8" width="48" height="48" rx="8"/>
+                    <line x1="8" y1="24" x2="56" y2="24"/>
+                    <circle cx="32" cy="42" r="8"/>
+                    <path d="M32 38v4l3 3"/>
+                </svg>
+                <h4 style="color: var(--text-tertiary); margin-bottom: var(--space-2);">No Prediction Yet</h4>
+                <p style="color: var(--text-tertiary); font-size: var(--text-sm); margin: 0;">
+                    Fill in the property details and click "Get Price Estimate" to see the prediction.
+                </p>
+            </div>
+
+            <!-- Result State (hidden initially) -->
+            <div id="result-content" style="display: none;">
+                <div style="text-align: center;">
+                    <span class="section__label">Estimated Value</span>
+                    <div class="predict-result__price" id="result-price">$0</div>
+
+                    <div class="predict-result__confidence">
+                        <span style="font-size: var(--text-sm); color: var(--text-tertiary);">Confidence:</span>
+                        <div class="confidence-bar">
+                            <div class="confidence-bar__fill" id="result-confidence-bar" style="width: 0%;"></div>
+                        </div>
+                        <span style="font-size: var(--text-sm); font-weight: var(--weight-semibold);" id="result-confidence-text">0%</span>
+                    </div>
+                </div>
+
+                <div class="predict-result__summary" id="result-summary">
+                    <!-- Dynamically filled by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Error State (hidden initially) -->
+            <div id="result-error" style="display: none; text-align: center; padding: var(--space-8);">
+                <h4 style="color: var(--color-error); margin-bottom: var(--space-2);">Prediction Failed</h4>
+                <p id="error-message" style="color: var(--text-secondary); font-size: var(--text-sm); margin: 0;"></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/prediction.js') }}"></script>
+{% endblock %}

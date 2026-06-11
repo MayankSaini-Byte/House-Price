@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Documentation — House Price Prediction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 9</span>
+        <h1 class="page-header__title">Project Documentation</h1>
+        <p class="page-header__description">
+            Complete technical documentation of the House Price Prediction project —
+            from problem statement to future improvements.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="docs-layout">
+
+        <!-- ═══ Sidebar Navigation ═══ -->
+        <nav class="docs-nav">
+            <a href="#problem" class="docs-nav__link docs-nav__link--active">Problem Statement</a>
+            <a href="#dataset" class="docs-nav__link">Dataset Description</a>
+            <a href="#workflow" class="docs-nav__link">Workflow</a>
+            <a href="#cleaning" class="docs-nav__link">Data Cleaning</a>
+            <a href="#engineering" class="docs-nav__link">Feature Engineering</a>
+            <a href="#modeling" class="docs-nav__link">Modeling</a>
+            <a href="#evaluation" class="docs-nav__link">Evaluation</a>
+            <a href="#improvements" class="docs-nav__link">Future Improvements</a>
+            <a href="#lessons" class="docs-nav__link">Lessons Learned</a>
+        </nav>
+
+        <!-- ═══ Documentation Content ═══ -->
+        <div class="docs-content">
+
+            <h2 id="problem">Problem Statement</h2>
+            <p>
+                Given a set of features describing a residential property (location, size, quality,
+                condition, amenities, etc.), predict the final sale price. This is a <strong>supervised
+                regression</strong> problem where the target variable (<code>SalePrice</code>) is
+                continuous.
+            </p>
+            <p>
+                The dataset comes from the
+                <a href="https://www.kaggle.com/c/house-prices-advanced-regression-techniques" target="_blank" rel="noopener">
+                    Kaggle House Prices competition
+                </a>,
+                which challenges participants to build models that accurately predict house prices
+                in Ames, Iowa. The evaluation metric is RMSE on log-transformed predictions.
+            </p>
+
+            <h2 id="dataset">Dataset Description</h2>
+            <p>
+                The Ames Housing dataset was compiled by Dean De Cock as an alternative to the
+                frequently cited Boston Housing dataset. It contains <strong>1,460 training
+                observations</strong> and <strong>80 features</strong>, with a test set of 1,459
+                observations (without sale prices).
+            </p>
+
+            <h3>Feature Categories</h3>
+            <ul>
+                <li><strong>Location:</strong> Neighborhood, Condition1/2, MSZoning</li>
+                <li><strong>Size:</strong> LotArea, GrLivArea, TotalBsmtSF, GarageArea</li>
+                <li><strong>Quality:</strong> OverallQual, OverallCond, ExterQual, KitchenQual</li>
+                <li><strong>Age:</strong> YearBuilt, YearRemodAdd, GarageYrBlt</li>
+                <li><strong>Amenities:</strong> Fireplaces, PoolArea, Fence, MiscFeature</li>
+                <li><strong>Structure:</strong> BldgType, HouseStyle, RoofStyle, Foundation</li>
+                <li><strong>Utilities:</strong> Heating, CentralAir, Electrical</li>
+                <li><strong>Sale:</strong> SaleType, SaleCondition, MoSold, YrSold</li>
+            </ul>
+
+            <h2 id="workflow">Workflow</h2>
+            <p>The project follows a standard machine learning pipeline:</p>
+            <ul>
+                <li><strong>Data Loading:</strong> Read CSV files using pandas</li>
+                <li><strong>Exploratory Analysis:</strong> Visualize distributions, correlations, missing values</li>
+                <li><strong>Data Cleaning:</strong> Handle missing values using domain-appropriate strategies</li>
+                <li><strong>Feature Engineering:</strong> Create 10 new features using domain knowledge</li>
+                <li><strong>Preprocessing:</strong> StandardScaler for numerics, OneHotEncoder for categoricals</li>
+                <li><strong>Model Training:</strong> Train 5 regression models</li>
+                <li><strong>Evaluation:</strong> Compare using R², MAE, RMSE on held-out test set</li>
+                <li><strong>Deployment:</strong> Best model served via Flask API for interactive predictions</li>
+            </ul>
+
+            <h2 id="cleaning">Data Cleaning Process</h2>
+            <p>
+                19 columns contained missing values. We applied three distinct imputation strategies
+                based on the <em>semantic meaning</em> of each missing value:
+            </p>
+            <ul>
+                <li><strong>"None" fill (15 columns):</strong> Categorical features where NaN means
+                    the feature is absent (e.g., no pool, no fence, no garage)</li>
+                <li><strong>Zero fill (3 columns):</strong> Numerical features where NaN means zero
+                    area/age (MasVnrArea, GarageYrBlt, and test-set numerical columns)</li>
+                <li><strong>Smart imputation:</strong> LotFrontage filled using neighborhood median;
+                    Electrical filled with dataset mode</li>
+            </ul>
+            <p>
+                For the test set, additional columns had missing values (MSZoning, Utilities, etc.).
+                These were filled using the mode of the training data to prevent data leakage.
+            </p>
+
+            <h2 id="engineering">Feature Engineering Process</h2>
+            <p>
+                We created 10 new features from existing columns, each motivated by real-estate
+                domain knowledge:
+            </p>
+            <ul>
+                <li><strong>HouseAge / RemodAge:</strong> Time-based features capturing depreciation and renovation recency</li>
+                <li><strong>TotalSF:</strong> Combined above-ground and basement area into total usable space</li>
+                <li><strong>TotalBath:</strong> Weighted sum of all bathroom types (full=1, half=0.5)</li>
+                <li><strong>TotalPorchSF:</strong> Sum of all porch/deck areas</li>
+                <li><strong>OverallScore:</strong> Interaction term between quality and condition</li>
+                <li><strong>HasPool / HasGarage / HasFireplace / HasBasement:</strong> Binary presence indicators</li>
+            </ul>
+
+            <h2 id="modeling">Modeling Process</h2>
+            <p>Five regression algorithms were trained and evaluated:</p>
+            <ul>
+                <li><strong>Linear Regression:</strong> Baseline model with no hyperparameters. Works well due to our feature engineering and log transformation.</li>
+                <li><strong>Random Forest:</strong> Ensemble of 100 decision trees with bagging. Provides feature importance rankings.</li>
+                <li><strong>Gradient Boosting:</strong> Sequential ensemble with 200 trees, learning rate 0.1, max depth 4.</li>
+                <li><strong>SVR:</strong> Support Vector Regressor with RBF kernel. Limited by iteration count on this dataset size.</li>
+                <li><strong>KNN:</strong> K=5 nearest neighbors. Suffers from curse of dimensionality with 280+ encoded features.</li>
+            </ul>
+            <p>
+                The target variable was log-transformed using <code>np.log1p</code> before training.
+                All predictions are reverse-transformed using <code>np.expm1</code> for evaluation
+                in dollar terms.
+            </p>
+
+            <h2 id="evaluation">Evaluation Process</h2>
+            <p>
+                Models were evaluated on a held-out 20% test set (292 houses) using three metrics:
+            </p>
+            <ul>
+                <li><strong>R² Score:</strong> Proportion of variance explained (1.0 = perfect). Our best: ~0.90</li>
+                <li><strong>MAE (Mean Absolute Error):</strong> Average prediction error in dollars</li>
+                <li><strong>RMSE (Root Mean Squared Error):</strong> Penalizes large errors more heavily</li>
+            </ul>
+            <p>
+                Linear Regression achieved the highest R², demonstrating that well-engineered features
+                can make simple models outperform complex ones.
+            </p>
+
+            <h2 id="improvements">Future Improvements</h2>
+            <ul>
+                <li><strong>Hyperparameter tuning:</strong> Use GridSearchCV or Optuna to systematically optimize model parameters</li>
+                <li><strong>Stacking/Blending:</strong> Combine predictions from multiple models for better accuracy</li>
+                <li><strong>Advanced models:</strong> Try XGBoost, LightGBM, or CatBoost with proper tuning</li>
+                <li><strong>Target encoding:</strong> Use target encoding for high-cardinality categorical features instead of one-hot</li>
+                <li><strong>Cross-validation:</strong> Implement K-fold CV instead of single train/test split for more robust evaluation</li>
+                <li><strong>Outlier removal:</strong> Identify and remove or cap outliers in GrLivArea and SalePrice</li>
+                <li><strong>More feature engineering:</strong> Polynomial features, log transforms of skewed features</li>
+                <li><strong>Regularization:</strong> Use Ridge/Lasso/ElasticNet to handle multicollinearity</li>
+            </ul>
+
+            <h2 id="lessons">Lessons Learned</h2>
+            <ul>
+                <li><strong>Feature engineering > model complexity:</strong> Well-crafted features enable simple models to compete with or outperform complex ones</li>
+                <li><strong>Domain knowledge is crucial:</strong> Understanding real-estate valuation guided every cleaning and engineering decision</li>
+                <li><strong>Missing values carry information:</strong> In this dataset, most "missing" values actually mean "feature absent" — a meaningful signal, not noise</li>
+                <li><strong>Log transform the target:</strong> When the target is right-skewed (as prices often are), log transformation significantly improves model performance</li>
+                <li><strong>Scale your features:</strong> Distance-based models (SVR, KNN) are very sensitive to feature scales. StandardScaler is essential.</li>
+                <li><strong>Evaluate on unseen data:</strong> Training accuracy is meaningless — only test set performance tells you if the model truly learned</li>
+            </ul>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}How ML Works — House Price Prediction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 6</span>
+        <h1 class="page-header__title">How Machine Learning Learns House Prices</h1>
+        <p class="page-header__description">
+            A beginner-friendly explanation of how a computer learns to predict house prices from data,
+            without being explicitly programmed with pricing rules.
+        </p>
+    </div>
+</div>
+
+<div class="container container--narrow">
+
+    <!-- ═══ What are Features? ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-4">What are Features?</h2>
+        <p>
+            Features are the <strong>measurable properties</strong> of each house that we give to the model.
+            Think of them as the information on a real-estate listing: square footage, number of bedrooms,
+            year built, neighborhood, and so on.
+        </p>
+        <p>
+            In our dataset, we have <strong>80 features</strong> — everything from lot size to
+            the type of heating system. The model's job is to figure out which features matter most
+            and how they combine to determine the price.
+        </p>
+
+        <!-- Features Diagram -->
+        <div class="diagram-block">
+            <svg viewBox="0 0 600 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Feature boxes -->
+                <rect x="10" y="20" width="120" height="40" rx="6" fill="#334155" stroke="#c9a84c" stroke-width="1.5"/>
+                <text x="70" y="45" text-anchor="middle" fill="#f1f5f9" font-size="12" font-family="Inter, sans-serif">Living Area</text>
+
+                <rect x="10" y="80" width="120" height="40" rx="6" fill="#334155" stroke="#c9a84c" stroke-width="1.5"/>
+                <text x="70" y="105" text-anchor="middle" fill="#f1f5f9" font-size="12" font-family="Inter, sans-serif">Overall Quality</text>
+
+                <rect x="10" y="140" width="120" height="40" rx="6" fill="#334155" stroke="#c9a84c" stroke-width="1.5"/>
+                <text x="70" y="165" text-anchor="middle" fill="#f1f5f9" font-size="12" font-family="Inter, sans-serif">Year Built</text>
+
+                <!-- Arrows -->
+                <line x1="130" y1="40" x2="230" y2="100" stroke="#c9a84c" stroke-width="1.5" opacity="0.6"/>
+                <line x1="130" y1="100" x2="230" y2="100" stroke="#c9a84c" stroke-width="1.5" opacity="0.6"/>
+                <line x1="130" y1="160" x2="230" y2="100" stroke="#c9a84c" stroke-width="1.5" opacity="0.6"/>
+
+                <!-- Model box -->
+                <rect x="230" y="65" width="140" height="70" rx="10" fill="#1e3a5f" stroke="#c9a84c" stroke-width="2"/>
+                <text x="300" y="95" text-anchor="middle" fill="#c9a84c" font-size="14" font-weight="600" font-family="Inter, sans-serif">ML Model</text>
+                <text x="300" y="115" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">Learns patterns</text>
+
+                <!-- Arrow to prediction -->
+                <line x1="370" y1="100" x2="440" y2="100" stroke="#c9a84c" stroke-width="2"/>
+                <polygon points="440,95 450,100 440,105" fill="#c9a84c"/>
+
+                <!-- Prediction box -->
+                <rect x="455" y="70" width="130" height="60" rx="10" fill="#334155" stroke="#22c55e" stroke-width="2"/>
+                <text x="520" y="95" text-anchor="middle" fill="#22c55e" font-size="13" font-weight="600" font-family="Inter, sans-serif">$185,000</text>
+                <text x="520" y="115" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">Predicted Price</text>
+            </svg>
+        </div>
+    </section>
+
+    <!-- ═══ Target Variable ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-4">What is the Target Variable?</h2>
+        <p>
+            The <strong>target variable</strong> is what we're trying to predict — in our case, the
+            <code>SalePrice</code>. During training, the model has access to both the features AND the
+            sale price for each house. It uses this "answer key" to learn the relationship between
+            features and price.
+        </p>
+        <div class="explanation">
+            <div class="explanation__title">Key Concept</div>
+            <p class="explanation__text">
+                This is called <strong>supervised learning</strong> because the model is "supervised" by
+                the known answers. It's like a student studying with an answer key — they see both the
+                question (features) and the answer (price), and gradually learn the pattern.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══ Training Process ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-4">The Training Process</h2>
+        <p>
+            Training is how the model learns. Here's what happens step by step:
+        </p>
+
+        <div class="step">
+            <div class="step__number">1</div>
+            <div class="step__content">
+                <h4 class="step__title">Initialize Random Weights</h4>
+                <p class="card__body" style="margin:0;">
+                    The model starts with random guesses for how important each feature is.
+                    At this point, its predictions are essentially meaningless.
+                </p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step__number">2</div>
+            <div class="step__content">
+                <h4 class="step__title">Make Predictions</h4>
+                <p class="card__body" style="margin:0;">
+                    Using its current weights, the model predicts the price for each training house.
+                    Initially, these predictions will be wildly inaccurate.
+                </p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step__number">3</div>
+            <div class="step__content">
+                <h4 class="step__title">Calculate Error</h4>
+                <p class="card__body" style="margin:0;">
+                    The model compares its predictions to the actual sale prices. The difference is
+                    called the <strong>loss</strong> or <strong>error</strong>. A common measure is
+                    Mean Squared Error (MSE) — the average of all squared prediction errors.
+                </p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step__number">4</div>
+            <div class="step__content">
+                <h4 class="step__title">Adjust Weights</h4>
+                <p class="card__body" style="margin:0;">
+                    The model adjusts its weights to reduce the error. For Linear Regression, there's
+                    a direct mathematical formula. For other models, this is done iteratively using
+                    <strong>gradient descent</strong> — moving weights in the direction that decreases error.
+                </p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step__number">5</div>
+            <div class="step__content">
+                <h4 class="step__title">Repeat Until Convergence</h4>
+                <p class="card__body" style="margin:0;">
+                    Steps 2–4 repeat until the error stops decreasing significantly. At this point,
+                    the model has "learned" — its weights encode the relationship between features and prices.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Validation ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-4">Validation — Checking for Overfitting</h2>
+        <p>
+            We split the data into <strong>80% training</strong> and <strong>20% testing</strong>.
+            The model only sees the training data during learning. The test data is held back to
+            evaluate how well the model generalizes to houses it has never seen before.
+        </p>
+
+        <div class="diagram-block">
+            <svg viewBox="0 0 600 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Training set -->
+                <rect x="20" y="30" width="400" height="60" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
+                <text x="220" y="55" text-anchor="middle" fill="#3b82f6" font-size="14" font-weight="600" font-family="Inter, sans-serif">Training Data (80%)</text>
+                <text x="220" y="75" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Inter, sans-serif">1,168 houses — model learns from these</text>
+
+                <!-- Test set -->
+                <rect x="430" y="30" width="150" height="60" rx="8" fill="#334155" stroke="#22c55e" stroke-width="1.5"/>
+                <text x="505" y="55" text-anchor="middle" fill="#22c55e" font-size="14" font-weight="600" font-family="Inter, sans-serif">Test Data (20%)</text>
+                <text x="505" y="75" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Inter, sans-serif">292 houses — unseen</text>
+            </svg>
+        </div>
+
+        <div class="explanation">
+            <div class="explanation__title">Why Not Use All the Data?</div>
+            <p class="explanation__text">
+                If we test on the same data the model trained on, it could simply memorize the answers
+                (overfitting). The held-out test set tells us if the model learned <strong>general
+                patterns</strong> vs. just memorizing specific houses. Our best model achieves an R²
+                of 0.90 on test data, meaning it explains 90% of price variation on houses it has never seen.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══ Prediction ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-4">Making Predictions</h2>
+        <p>
+            Once trained, the model can predict the price of any new house. You provide the features
+            (area, quality, age, etc.) and the model applies its learned weights to produce a price estimate.
+        </p>
+        <p>
+            For Linear Regression, this is simply multiplying each feature by its learned weight and summing:
+        </p>
+        <div class="formula" style="font-size: var(--text-sm);">
+            Price = w₁ × LivingArea + w₂ × Quality + w₃ × Age + ... + bias
+        </div>
+        <p>
+            The model learned that living area has a positive weight (more area → higher price)
+            and house age has a negative weight (older → lower price). These weights were automatically
+            discovered from the data — we never told the model that bigger houses cost more.
+        </p>
+
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('prediction.predict_page') }}" class="btn btn--primary btn--large">
+                Try the Prediction Tool
+            </a>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

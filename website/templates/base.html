@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="House Price Prediction — A professional machine learning case study using data-driven models and feature engineering to predict residential property prices.">
+    <title>{% block title %}House Price Prediction — ML Showcase{% endblock %}</title>
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- NAVIGATION                                  -->
+    <!-- ═══════════════════════════════════════════ -->
+    <nav class="nav" id="main-nav">
+        <div class="nav__inner">
+            <a href="{{ url_for('main.landing') }}" class="nav__brand">
+                <!-- House/Analytics SVG Icon -->
+                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 16L16 4l12 12"/>
+                    <path d="M6 14v14h8v-8h4v8h8V14"/>
+                    <rect x="12" y="18" width="8" height="4" rx="1" fill="currentColor" opacity="0.3"/>
+                </svg>
+                <span>PriceML</span>
+            </a>
+
+            <div class="nav__links" id="nav-links">
+                <a href="{{ url_for('main.landing') }}" class="nav__link {% if request.endpoint == 'main.landing' %}nav__link--active{% endif %}">Home</a>
+                <a href="{{ url_for('eda.eda') }}" class="nav__link {% if request.endpoint == 'eda.eda' %}nav__link--active{% endif %}">EDA</a>
+                <a href="{{ url_for('cleaning.cleaning') }}" class="nav__link {% if request.endpoint == 'cleaning.cleaning' %}nav__link--active{% endif %}">Cleaning</a>
+                <a href="{{ url_for('features.features') }}" class="nav__link {% if request.endpoint == 'features.features' %}nav__link--active{% endif %}">Features</a>
+                <a href="{{ url_for('models.models') }}" class="nav__link {% if request.endpoint == 'models.models' %}nav__link--active{% endif %}">Models</a>
+                <a href="{{ url_for('explanation.explanation') }}" class="nav__link {% if request.endpoint == 'explanation.explanation' %}nav__link--active{% endif %}">How It Works</a>
+                <a href="{{ url_for('prediction.predict_page') }}" class="nav__link {% if request.endpoint == 'prediction.predict_page' %}nav__link--active{% endif %}">Predict</a>
+                <a href="{{ url_for('results.results') }}" class="nav__link {% if request.endpoint == 'results.results' %}nav__link--active{% endif %}">Results</a>
+                <a href="{{ url_for('docs.docs') }}" class="nav__link {% if request.endpoint == 'docs.docs' %}nav__link--active{% endif %}">Docs</a>
+            </div>
+
+            <div class="flex" style="align-items: center;">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode">
+                    <!-- Sun icon (shown in dark mode) -->
+                    <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <!-- Moon icon (shown in light mode) -->
+                    <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+
+                <button class="nav__toggle" id="nav-toggle" aria-label="Toggle navigation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- MAIN CONTENT                                -->
+    <!-- ═══════════════════════════════════════════ -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- FOOTER                                      -->
+    <!-- ═══════════════════════════════════════════ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__inner">
+                <p class="footer__text">
+                    House Price Prediction — Machine Learning Case Study &copy; 2024
+                </p>
+                <div class="footer__links">
+                    <a href="{{ url_for('docs.docs') }}" class="footer__link">Documentation</a>
+                    <a href="{{ url_for('prediction.predict_page') }}" class="footer__link">Try Prediction</a>
+                    <a href="https://www.kaggle.com/c/house-prices-advanced-regression-techniques" class="footer__link" target="_blank" rel="noopener">Kaggle Dataset</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

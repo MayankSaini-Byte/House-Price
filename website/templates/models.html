@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Model Comparison — House Price Prediction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <span class="section__label">Page 5</span>
+        <h1 class="page-header__title">Model Comparison</h1>
+        <p class="page-header__description">
+            Five regression models trained, evaluated, and compared. Each model is explained with theory,
+            mathematical intuition, implementation, and results.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ═══ Performance Comparison Table ═══ -->
+    <section class="mb-12">
+        <h2 class="section__title mb-8">Performance Overview</h2>
+        <div class="table-wrapper mb-8">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>R² Score</th>
+                        <th>MAE ($)</th>
+                        <th>RMSE ($)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, metrics in results.items() %}
+                    <tr {% if metrics.r2 == results.values()|map(attribute='r2')|max %}class="table__highlight"{% endif %}>
+                        <td><strong>{{ name }}</strong></td>
+                        <td>{{ metrics.r2 }}</td>
+                        <td>${{ "{:,.0f}".format(metrics.mae) }}</td>
+                        <td>${{ "{:,.0f}".format(metrics.rmse) }}</td>
+                        <td>
+                            {% if metrics.r2 == results.values()|map(attribute='r2')|max %}
+                                <span class="badge badge--success">Best</span>
+                            {% else %}
+                                <span class="badge badge--info">Trained</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- R² Chart -->
+        <div class="chart-card mb-8">
+            <div class="chart-card__image">
+                <img src="{{ url_for('static', filename='images/charts/model_r2_comparison.png') }}" alt="R² Score Comparison">
+            </div>
+            <div class="chart-card__content">
+                <h3 class="chart-card__title">R² Score Comparison</h3>
+                <p class="chart-card__description">
+                    R² (coefficient of determination) measures how much variance in house prices the model explains.
+                    A score of 1.0 means perfect prediction. Higher is better.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- LINEAR REGRESSION                           -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="model-section">
+        <div class="model-header">
+            <h2 class="model-header__title">Linear Regression</h2>
+            {% if results.get('Linear Regression', {}).get('r2', 0) == results.values()|map(attribute='r2')|max %}
+                <span class="badge badge--success">Best Model</span>
+            {% endif %}
+        </div>
+
+        <div class="model-grid">
+            <div class="card">
+                <h4 class="card__title">Theory</h4>
+                <p class="card__body">
+                    Linear Regression finds a linear relationship between input features and the target.
+                    It fits a straight line (or hyperplane in multiple dimensions) that minimizes the
+                    sum of squared differences between predicted and actual values.
+                </p>
+                <p class="card__body" style="margin:0;">
+                    The model assumes that house price is a <strong>weighted sum</strong> of all features:
+                    <em>Price = w₁×Area + w₂×Quality + w₃×Age + ... + bias</em>
+                </p>
+            </div>
+            <div class="card">
+                <h4 class="card__title">Mathematical Intuition</h4>
+                <p class="card__body">
+                    The model minimizes the <strong>Ordinary Least Squares (OLS)</strong> cost function:
+                </p>
+                <div class="formula">J(w) = Σ(yᵢ − ŷᵢ)² = Σ(yᵢ − wᵀxᵢ)²</div>
+                <p class="card__body" style="margin:0;">
+                    The closed-form solution is <code>w = (XᵀX)⁻¹Xᵀy</code>. Each weight <code>wⱼ</code>
+                    represents how much the price changes per unit increase in feature <code>j</code>,
+                    holding all other features constant. This is why scaling features is important —
+                    without it, features with larger scales would appear more important.
+                </p>
+            </div>
+        </div>
+
+        <div class="model-grid">
+            <div class="card">
+                <h4 class="card__title">Advantages</h4>
+                <ul style="list-style: disc; padding-left: var(--space-6);">
+                    <li style="margin-bottom: var(--space-2); color: var(--text-secondary);">Fast training — closed-form solution, no iteration needed</li>
+                    <li style="margin-bottom: var(--space-2); color: var(--text-secondary);">Highly interpretable — each coefficient has a clear meaning</li>
+                    <li style="margin-bottom: var(--space-2); color: var(--text-secondary);">No hyperparameters to tune</li>
+                    <li style="margin-bottom: var(--space-2); color: var(--text-secondary);">Works well when features have linear relationships with target</li>
+                    <li style="color: var(--text-secondary);">Low risk of overfitting with proper regularization</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4 class="card__title">Disadvantages</h4>
+                <ul style="list-style: disc; padding-left: var(--space-6);">
+                    <li style="margin-bottom: var(--space-2); color: var(--text-secondary);">Cannot capture non-linear relationships without feature engineering</li>
+                    <li style="margin-bottom: var(--space-2); color: var(--text-secondary);">Sensitive to multicollinearity</li>
+                    <li style="margin-bottom: var(--space-2); color: var(--text-secondary);">Assumes homoscedasticity (constant variance of errors)</li>
+                    <li style="color: var(--text-secondary);">Sensitive to outliers — squared errors amplify outlier influence</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-8">
+            <h4 class="card__title">Implementation</h4>
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression
+
+<span class="comment"># Initialize — no hyperparameters needed</span>
+<span class="variable">lr</span> <span class="operator">=</span> <span class="function">LinearRegression</span>()
+
+<span class="comment"># Train on scaled features</span>
+<span class="variable">lr</span>.<span class="function">fit</span>(<span class="variable">X_train_scaled</span>, <span class="variable">y_train</span>)
+
+<span class="comment"># Predict on test set</span>
+<span class="variable">y_pred</span> <span class="operator">=</span> <span class="variable">lr</span>.<span class="function">predict</span>(<span class="variable">X_test_scaled</span>)
+
+<span class="comment"># Evaluate</span>
+<span class="keyword">print</span>(<span class="function">f</span><span class="string">"R² Score: {r2_score(y_test, y_pred):.4f}"</span>)</pre>
+            </div>
+
+            <div class="explanation mt-4">
+                <div class="explanation__title">Why Linear Regression Performs Best Here</div>
+                <p class="explanation__text">
+                    Our extensive feature engineering (TotalSF, OverallScore, HouseAge) explicitly creates
+                    the non-linear interactions that linear models can't learn on their own. The log
+                    transformation of SalePrice also linearizes the relationship between features and price.
+                    Combined with StandardScaler normalization, this gives Linear Regression an ideal setup.
+                    The model sees the problem as: <em>log(price) ≈ linear combination of well-engineered features</em>,
+                    which is exactly what it's designed to solve.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- RANDOM FOREST                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="model-section">
+        <div class="model-header">
+            <h2 class="model-header__title">Random Forest Regressor</h2>
+            <span class="badge badge--info">Ensemble Model</span>
+        </div>
+
+        <div class="model-grid">
+            <div class="card">
+                <h4 class="card__title">Theory</h4>
+                <p class="card__body">
+                    Random Forest is an <strong>ensemble</strong> method that builds many decision trees
+                    on random subsets of the data and averages their predictions. Each tree sees a different
+                    random sample (bagging) and a random subset of features at each split.
+                </p>
+                <p class="card__body" style="margin:0;">
+                    The "wisdom of crowds" effect reduces overfitting — individual trees may overfit,
+                    but averaging many diverse trees produces a robust, generalizable prediction.
+                </p>
+            </div>
+            <div class="card">
+                <h4 class="card__title">Mathematical Intuition</h4>
+                <p class="card__body">
+                    Final prediction is the average of all tree predictions:
+                </p>
+                <div class="formula">ŷ = (1/N) × Σ Treeᵢ(x)</div>
+                <p class="card__body" style="margin:0;">
+                    Each tree recursively splits the data on the feature/threshold that maximizes
+                    variance reduction (minimizes MSE within each leaf). The randomization in feature
+                    selection at each split decorrelates the trees, reducing the variance of the ensemble.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-8">
+            <h4 class="card__title">Implementation & Hyperparameters</h4>
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestRegressor
+
+<span class="variable">rf</span> <span class="operator">=</span> <span class="function">RandomForestRegressor</span>(
+    n_estimators<span class="operator">=</span><span class="number">100</span>,    <span class="comment"># Number of trees in the forest</span>
+    random_state<span class="operator">=</span><span class="number">42</span>,    <span class="comment"># Reproducibility seed</span>
+)
+
+<span class="variable">rf</span>.<span class="function">fit</span>(<span class="variable">X_train_scaled</span>, <span class="variable">y_train</span>)</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- GRADIENT BOOSTING                           -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="model-section">
+        <div class="model-header">
+            <h2 class="model-header__title">Gradient Boosting Regressor</h2>
+            <span class="badge badge--accent">Advanced</span>
+        </div>
+
+        <div class="model-grid">
+            <div class="card">
+                <h4 class="card__title">Theory</h4>
+                <p class="card__body">
+                    Unlike Random Forest (which builds trees independently), Gradient Boosting builds
+                    trees <strong>sequentially</strong>. Each new tree tries to correct the errors
+                    (residuals) of all previous trees combined.
+                </p>
+                <p class="card__body" style="margin:0;">
+                    Think of it as iterative refinement: the first tree makes a rough prediction,
+                    the second tree focuses on what the first got wrong, the third fixes remaining
+                    errors, and so on.
+                </p>
+            </div>
+            <div class="card">
+                <h4 class="card__title">Mathematical Intuition</h4>
+                <p class="card__body">
+                    At each step m, we fit a tree to the negative gradient of the loss:
+                </p>
+                <div class="formula">Fₘ(x) = Fₘ₋₁(x) + η × hₘ(x)</div>
+                <p class="card__body" style="margin:0;">
+                    Where <code>η</code> is the learning rate (controls step size) and <code>hₘ(x)</code>
+                    is the tree fitted to the residuals. Smaller learning rates require more trees
+                    but typically produce better generalization.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-8">
+            <h4 class="card__title">Implementation & Hyperparameters</h4>
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> GradientBoostingRegressor
+
+<span class="variable">gb</span> <span class="operator">=</span> <span class="function">GradientBoostingRegressor</span>(
+    n_estimators<span class="operator">=</span><span class="number">200</span>,     <span class="comment"># Number of boosting stages</span>
+    learning_rate<span class="operator">=</span><span class="number">0.1</span>,    <span class="comment"># Step size shrinkage</span>
+    max_depth<span class="operator">=</span><span class="number">4</span>,          <span class="comment"># Maximum depth of individual trees</span>
+    random_state<span class="operator">=</span><span class="number">42</span>,
+)
+
+<span class="variable">gb</span>.<span class="function">fit</span>(<span class="variable">X_train_scaled</span>, <span class="variable">y_train</span>)</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- SVR                                         -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="model-section">
+        <div class="model-header">
+            <h2 class="model-header__title">Support Vector Regressor (SVR)</h2>
+            <span class="badge badge--info">Kernel Method</span>
+        </div>
+
+        <div class="model-grid">
+            <div class="card">
+                <h4 class="card__title">Theory</h4>
+                <p class="card__body">
+                    SVR finds a function that deviates from the actual values by at most <code>ε</code>
+                    (epsilon) while being as flat as possible. Points within the ε-tube are not penalized;
+                    only points outside it contribute to the loss.
+                </p>
+                <p class="card__body" style="margin:0;">
+                    The RBF kernel maps data into a higher-dimensional space where non-linear
+                    relationships become linear, enabling SVR to capture complex patterns.
+                </p>
+            </div>
+            <div class="card">
+                <h4 class="card__title">When to Use</h4>
+                <p class="card__body" style="margin:0;">
+                    SVR works best with <strong>small to medium datasets</strong> and when the
+                    relationship between features and target is complex. It struggles with very
+                    large datasets (O(n²) training complexity) and requires careful feature scaling.
+                    On this dataset, the limited iteration count constrains its performance.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-8">
+            <h4 class="card__title">Implementation</h4>
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> SVR
+
+<span class="variable">svr</span> <span class="operator">=</span> <span class="function">SVR</span>(
+    kernel<span class="operator">=</span><span class="string">'rbf'</span>,     <span class="comment"># Radial Basis Function kernel</span>
+    C<span class="operator">=</span><span class="number">1.0</span>,            <span class="comment"># Regularization parameter</span>
+    max_iter<span class="operator">=</span><span class="number">5000</span>,    <span class="comment"># Maximum iterations for convergence</span>
+)</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- KNN                                         -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="model-section">
+        <div class="model-header">
+            <h2 class="model-header__title">K-Nearest Neighbors Regressor</h2>
+            <span class="badge badge--info">Instance-Based</span>
+        </div>
+
+        <div class="model-grid">
+            <div class="card">
+                <h4 class="card__title">Theory</h4>
+                <p class="card__body" style="margin:0;">
+                    KNN is the simplest ML algorithm: to predict the price of a new house, find the
+                    <strong>K most similar houses</strong> in the training data and average their prices.
+                    "Similarity" is measured by Euclidean distance in feature space. No model is actually
+                    trained — the algorithm stores the entire training set and queries it at prediction time.
+                </p>
+            </div>
+            <div class="card">
+                <h4 class="card__title">Why It Underperforms Here</h4>
+                <p class="card__body" style="margin:0;">
+                    With 280+ features after one-hot encoding, the feature space is very high-dimensional.
+                    In high dimensions, all points become roughly equidistant (the <strong>"curse of
+                    dimensionality"</strong>), making distance-based similarity meaningless. KNN works
+                    best with few, carefully selected features.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-8">
+            <h4 class="card__title">Implementation</h4>
+            <div class="code-block">
+                <div class="code-block__header">
+                    <span class="code-block__lang">Python</span>
+                    <div class="code-block__dots">
+                        <span class="code-block__dot code-block__dot--red"></span>
+                        <span class="code-block__dot code-block__dot--yellow"></span>
+                        <span class="code-block__dot code-block__dot--green"></span>
+                    </div>
+                </div>
+<pre><span class="keyword">from</span> sklearn.neighbors <span class="keyword">import</span> KNeighborsRegressor
+
+<span class="variable">knn</span> <span class="operator">=</span> <span class="function">KNeighborsRegressor</span>(
+    n_neighbors<span class="operator">=</span><span class="number">5</span>,    <span class="comment"># Number of neighbors to average</span>
+)</pre>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
