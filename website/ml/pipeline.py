@@ -5,10 +5,6 @@ Mirrors the logic from main.ipynb exactly, with added chart generation.
 import os
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend for server-side rendering
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
@@ -34,6 +30,9 @@ CHART_COLORS = {
 
 def _setup_chart_style():
     """Configure matplotlib for dark-themed charts matching the website palette."""
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
     plt.rcParams.update({
         'figure.facecolor': CHART_COLORS['bg'],
         'axes.facecolor': CHART_COLORS['bg'],
@@ -53,6 +52,7 @@ def _setup_chart_style():
 
 def _save_chart(fig, charts_dir, name):
     """Save a chart figure as a high-quality PNG."""
+    import matplotlib.pyplot as plt
     path = os.path.join(charts_dir, f'{name}.png')
     fig.savefig(path, dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -240,6 +240,8 @@ def build_pipeline(data_dir, charts_dir):
 
 def _generate_eda_charts(train, charts_dir):
     """Generate all EDA charts from the raw training data."""
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
     # 1. SalePrice Distribution
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -307,6 +309,7 @@ def _generate_eda_charts(train, charts_dir):
 
 def _generate_model_charts(results, charts_dir):
     """Generate model comparison charts."""
+    import matplotlib.pyplot as plt
     names = list(results.keys())
     r2_scores = [results[n]['r2'] for n in names]
     mae_scores = [results[n]['mae'] for n in names]
@@ -359,6 +362,7 @@ def _generate_model_charts(results, charts_dir):
 def _generate_feature_importance_chart(rf_model, X_train, num_cols, cat_cols, preprocessor, charts_dir):
     """Generate feature importance chart from Random Forest model."""
     try:
+        import matplotlib.pyplot as plt
         importances = rf_model.feature_importances_
         feature_names = []
 
@@ -407,6 +411,7 @@ def _generate_feature_importance_chart(rf_model, X_train, num_cols, cat_cols, pr
 
 def _generate_results_charts(train, charts_dir):
     """Generate charts for the Results & Insights page."""
+    import matplotlib.pyplot as plt
 
     # Price by Neighborhood (top 10)
     fig, ax = plt.subplots(figsize=(12, 6))
